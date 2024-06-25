@@ -134,54 +134,47 @@ KeeperCompatibleInterface
 
 /**
  * @notice Injects funds into the gauges provided
- * @param targetAddresses the list of gauges to fund (addresses must be pre-approved)
+ * @param gauges the list of gauges to fund (addresses must be pre-approved)
  */
-    function _injectFunds(address[] memory targetAddresses) internal whenNotPaused {
+    function _injectFunds(address[] memory gauges) internal whenNotPaused {
         uint256 minWaitPeriodSeconds = MinWaitPeriodSeconds;
-        address tokenAddress = InjectTokenAddress;
-        IERC20 token = IERC20(tokenAddress);
+        IERC20 token = IERC20(InjectTokenAddress);
         uint256 balance = token.balanceOf(address(this));
-        Target memory target;
-        for (uint256 idx = 0; idx < targetAddresses.length; idx++) {
-            target = GaugeConfigs[targetAddresses[idx]];
-            IChildChainGauge gauge = IChildChainGauge(targetAddresses[idx]);
+
+        for (uint256 idx = 0; idx < gauges.length; idx++) {
+            Target storage targetConfig = GaugeConfigs[gauges[idx]];
+            IChildChainGauge gauge = IChildChainGauge(gauges[idx]);
             uint256 current_gauge_emissions_end = gauge
-                .reward_data(tokenAddress)
+                .reward_data(address(token))
                 .period_finish;
 
             if (
-                target.lastInjectionTimestamp + minWaitPeriodSeconds <= block.timestamp && // Not too recent based on minWaitPeriodSeconds
-                target.programStartTimestamp <= block.timestamp &&  // Not before program start time
+                targetConfig.lastInjectionTimestamp + minWaitPeriodSeconds <= block.timestamp && // Not too recent based on minWaitPeriodSeconds
+                targetConfig.programStartTimestamp <= block.timestamp &&  // Not before program start time
                 current_gauge_emissions_end <= block.timestamp && // This token is currently not streaming on this gauge
-                target.periodNumber < target.maxPeriods && // We have not already executed the last period
-                balance >= target.amountPerPeriod && // We have enough coins to pay
-                target.amountPerPeriod <= MaxInjectionAmount && //  We are not trying to inject more than the global max for 1 injection
-                target.isActive == true // The gauge is marked active in the injector
+                targetConfig.periodNumber < targetConfig.maxPeriods && // We have not already executed the last period
+                balance >= targetConfig.amountPerPeriod && // We have enough coins to pay
+                targetConfig.amountPerPeriod <= MaxInjectionAmount && //  We are not trying to inject more than the global max for 1 injection
+                targetConfig.isActive // The gauge is marked active in the injector
             ) {
                 SafeERC20.forceApprove(
                     token,
-                    targetAddresses[idx],
-                    target.amountPerPeriod
+                    gauges[idx],
+                    targetConfig.amountPerPeriod
                 );
 
-                try
                 gauge.deposit_reward_token(
-                    tokenAddress,
-                    uint256(target.amountPerPeriod)
-                )
-                {
-                    GaugeConfigs[targetAddresses[idx]].lastInjectionTimestamp = uint56(
-                        block.timestamp
-                    );
-                    GaugeConfigs[targetAddresses[idx]].periodNumber++;
-                    emit EmissionsInjection(
-                        targetAddresses[idx],
-                        tokenAddress,
-                        target.amountPerPeriod
-                    );
-                } catch {
-                    revert RewardTokenError();
-                }
+                    address(token),
+                    targetConfig.amountPerPeriod
+                );
+
+                targetConfig.lastInjectionTimestamp = uint56(block.timestamp);
+                targetConfig.periodNumber++;
+                emit EmissionsInjection(
+                    gauges[idx],
+                    address(token),
+                    targetConfig.amountPerPeriod
+                );
             }
         }
     }
@@ -410,10 +403,14 @@ KeeperCompatibleInterface
  * @return delta is 0 if balances match, negative if injector balance is in deficit to service all loaded programs, and positive if there is a surplus.
  */
     function getBalanceDelta() public view returns (int256 delta) {
-        address[] memory gaugeList = getActiveGaugeList();
-        delta =
-            int256(IERC20(InjectTokenAddress).balanceOf(address(this))) - int256(getTotalDue());
-        // delta returned
+        uint256 balance = IERC20(InjectTokenAddress).balanceOf(address(this));
+        uint256 totalDue = getTotalDue();
+
+        if (balance >= totalDue) {
+            delta = int256(balance) - int256(totalDue);
+        } else {
+            delta = -1 * int256(totalDue - balance);
+        }
     }
 
 /**
@@ -491,11 +488,11 @@ KeeperCompatibleInterface
  */
     function getActiveGaugeList() public view returns (address[] memory activeGauges) {
         uint256 len = ActiveGauges.length();
-        address[] memory recipients = new address[](len);
-        for (uint i; i < len; i++) {
-            recipients[i] = ActiveGauges.at(i);
+        activeGauges = new address[](len);
+        for (uint256 i = 0; i < len; i++) {
+            activeGauges[i] = ActiveGauges.at(i);
         }
-        return recipients;
+        return activeGauges;
     }
 
 /**
