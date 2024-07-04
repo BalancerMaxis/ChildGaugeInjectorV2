@@ -300,6 +300,18 @@ describe('ChildChainGaugeInjector', () => {
         expect(upkeepNeeded).to.equal(true);
     });
 
+    it("should get the full schedule with recipients", async function () {
+        const weeklyIncentive = BigInt("200000000000000000000");
+
+        await injector.addRecipients([gauge, gauge2], weeklyIncentive, 2, 0);
+    
+        await injector.getFullSchedule();
+    });
+
+    it("should get the full schedule", async function () {    
+        await injector.getFullSchedule();
+    });
+
     it("should work with a long delay", async function () {
         const tokenAddress = await token.getAddress();
         const gaugeAddress = await gauge.getAddress();
@@ -393,6 +405,7 @@ describe('ChildChainGaugeInjector', () => {
         expect(rewardData.distributor).to.equal(await injector.owner());
     });
 
+    
     it('should set and retrieve keeper registry address correctly', async () => {
         const newKeeperAddress = await addr1.getAddress();
         await injector.setKeeperAddresses([newKeeperAddress]);
