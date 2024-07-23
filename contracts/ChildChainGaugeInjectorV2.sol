@@ -490,9 +490,9 @@ KeeperCompatibleInterface
 /**
  * @notice Return a list of active gauges
  */
-    function getActiveGaugeList() public view returns (address[] memory activeGauges) {
+    function getActiveGaugeList() public view returns (address[] memory) {
         uint256 len = ActiveGauges.length();
-        activeGauges = new address[](len);
+        address[] activeGauges = new address[](len);
         for (uint256 i = 0; i < len; i++) {
             activeGauges[i] = ActiveGauges.at(i);
         }
