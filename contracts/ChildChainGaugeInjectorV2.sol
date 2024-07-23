@@ -355,9 +355,13 @@ KeeperCompatibleInterface
 /**
 * @notice Gets all current schedule information as a set of arrays
 */
-    function getFullSchedule() public view returns (address[] memory gauges, uint256[] memory amountsPerPeriod, uint8[] memory maxPeriods, uint56[] memory lastTimestamps, uint56[] memory doNotStartBeforeTimestamps) {
-        gauges = getActiveGaugeList();
+    function getFullSchedule() public view returns (address[] memory, uint256[] memory, uint8[] memory, uint56[] memory, uint56[] memory) {
+        address[] gauges = getActiveGaugeList();
         uint len = gauges.length;
+        uint256[] amountsPerPeriod = new uint256[](len);
+        uint8[] maxPeriods = new uint8[](len);
+        uint56[] lastTimestamps = new uint56[](len);
+        uint56[] doNotStartBeforeTimestamps = new uint56[](len);
 
         for (uint256 i = 0; i < gauges.length; i++) {
             Target memory target = GaugeConfigs[gauges[i]];
