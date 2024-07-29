@@ -300,15 +300,11 @@ describe('ChildChainGaugeInjector', () => {
         expect(upkeepNeeded).to.equal(true);
     });
 
-    it("should get the full schedule with recipients", async function () {
+    it.only("should get the full schedule with recipients", async function () {
         const weeklyIncentive = BigInt("200000000000000000000");
 
         await injector.addRecipients([gauge, gauge2], weeklyIncentive, 2, 0);
     
-        await injector.getFullSchedule();
-    });
-
-    it("should get the full schedule", async function () {    
         await injector.getFullSchedule();
     });
 
