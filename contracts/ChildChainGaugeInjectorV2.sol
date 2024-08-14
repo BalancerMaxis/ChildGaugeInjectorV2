@@ -578,6 +578,13 @@ KeeperCompatibleInterface
         MaxInjectionAmount = amount;
     }
 
+    function setMaxGlobalAmountPerPeriod(uint256 amount) external onlyOwner {
+        MaxGlobalAmountPerPeriod = amount;
+    }
+
+    function setMaxTotalDue(uint256 amount) external onlyOwner {
+        MaxTotalDue = amount;
+    }
 /**
  * @notice Pauses the contract, which prevents executing performUpkeep
  */
