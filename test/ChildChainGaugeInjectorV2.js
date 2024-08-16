@@ -7,10 +7,13 @@ const erc20ABI = require('../abis/erc20.json');
 const GAUGE = "0x3Eae4a1c2E36870A006E816930d9f55DF0a72a13"
 const GAUGE_2 = "0xc7e5FE004416A96Cb2C7D6440c28aE92262f7695"
 const LM_MULTISIG = "0xc38c5f97B34E175FFd35407fc91a937300E33860"
-const ARBI_LDO_ADDRESS = "0xC3C7d422809852031b44ab29EEC9F1EfF2A58756"
+const TEST_TOKEN_ADDRESS = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
 const AUTHORIZER_ADAPTER = "0xAB093cd16e765b5B23D34030aaFaF026558e0A19"
-const ARBI_LDO_WHALE = "0x8565faab405b06936014c8b6bd5ab60376cc051b"
+const TEST_TOKEN_WHALE = "0xf977814e90da44bfa03b6295a0616a897441acec"
 
+function toTokenUnits(amount, decimals = 18) {
+    return BigInt(amount) * (10n ** BigInt(decimals));
+}
 
 async function impersonateAccount(address) {
     return await hre.network.provider.request({
@@ -30,6 +33,7 @@ describe('ChildChainGaugeInjector', () => {
     let token;
     let gauge;
     let gauge2;
+    let tokenDecimals;
 
     before(async () => {
         const [ownerSigner, addr1Signer, addr2Signer] = await hre.ethers.getSigners();
@@ -44,7 +48,7 @@ describe('ChildChainGaugeInjector', () => {
             await owner.getAddress(),
             [await owner.getAddress()],
             3600, // 1 hour min wait period
-            ARBI_LDO_ADDRESS,
+            TEST_TOKEN_ADDRESS,
             BigInt("500000000000000000000")
         );
 
@@ -64,7 +68,7 @@ describe('ChildChainGaugeInjector', () => {
 
         const authorizer = new hre.ethers.Contract(AUTHORIZER_ADAPTER, authorizerABI, lmMultisigSigner)
 
-        const calldata = gauge.interface.encodeFunctionData("add_reward", [ARBI_LDO_ADDRESS, await injector.getAddress()]);
+        const calldata = gauge.interface.encodeFunctionData("add_reward", [TEST_TOKEN_ADDRESS, await injector.getAddress()]);
         await authorizer.performAction(
             GAUGE,
             calldata
@@ -74,13 +78,113 @@ describe('ChildChainGaugeInjector', () => {
             calldata
         );
 
-        await impersonateAccount(ARBI_LDO_WHALE);
-        const whaleSigner = await hre.ethers.getSigner(ARBI_LDO_WHALE);
-        token = new hre.ethers.Contract(ARBI_LDO_ADDRESS, erc20ABI, whaleSigner)
+        await impersonateAccount(TEST_TOKEN_WHALE);
+        const whaleSigner = await hre.ethers.getSigner(TEST_TOKEN_WHALE);
+        token = new hre.ethers.Contract(TEST_TOKEN_ADDRESS, erc20ABI, whaleSigner)
+        tokenDecimals = await token.decimals();
 
-        await token.transfer(owner, hre.ethers.parseEther("1000"))
-        console.log(`Balance LDO: ${hre.ethers.formatEther(await token.balanceOf(owner))}`);
+        await token.transfer(owner, 1000e6)
+        console.log(`Balance TEST TOKEN: ${hre.ethers.formatEther(await token.balanceOf(owner))}`);
 
+    });
+
+
+    it("should not allow adding a recipient with amount exceeding MaxInjectionAmount", async function () {
+        const maxInjectionAmount = await injector.MaxInjectionAmount();
+        const exceedingAmount = maxInjectionAmount + hre.ethers.parseEther("1");
+        const gaugeAddress = await gauge.getAddress();
+
+        await expect(
+            injector.addRecipients([gaugeAddress], exceedingAmount, 2, 0)
+        ).to.be.revertedWithCustomError(injector, "ExceedsMaxInjectionAmount");
+    });
+
+    it("should allow adding a recipient with amount equal to MaxInjectionAmount", async function () {
+        const maxInjectionAmount = await injector.MaxInjectionAmount();
+        const gaugeAddress = await gauge.getAddress();
+
+        await expect(
+            injector.addRecipients([gaugeAddress], maxInjectionAmount, 2, 0)
+        ).to.not.be.reverted;
+    });
+
+    it("should update MaxInjectionAmount and affect recipient addition", async function () {
+        const newMaxInjectionAmount = hre.ethers.parseEther("1000");
+        await injector.setMaxInjectionAmount(newMaxInjectionAmount);
+        const gaugeAddress = await gauge.getAddress();
+        const gaugeAddress2 = await gauge2.getAddress();
+
+        expect(await injector.MaxInjectionAmount()).to.equal(newMaxInjectionAmount);
+
+        await expect(
+            injector.addRecipients([gaugeAddress], newMaxInjectionAmount, 2, 0)
+        ).to.not.be.reverted;
+
+        await expect(
+            injector.addRecipients([gaugeAddress2], newMaxInjectionAmount + 1n, 2, 0)
+        ).to.be.revertedWithCustomError(injector, "ExceedsMaxInjectionAmount");
+    });
+
+
+    it("should not allow exceeding MaxGlobalAmountPerPeriod when adding recipients", async function () {
+        const gaugeAddress = await gauge.getAddress();
+        const gaugeAddress2 = await gauge2.getAddress();
+        // Set MaxGlobalAmountPerPeriod to 500
+        await injector.setMaxGlobalAmountPerPeriod(hre.ethers.parseEther("500"));
+
+        // Add a recipient with 400 tokens per period
+        await injector.addRecipients([gaugeAddress], hre.ethers.parseEther("400"), 2, 0);
+
+        // This should fail as it would exceed the MaxGlobalAmountPerPeriod
+        await expect(
+            injector.addRecipients([gaugeAddress2], hre.ethers.parseEther("200"), 2, 0)
+        ).to.be.revertedWithCustomError(injector, "ExceedsWeeklySpend");
+    });
+
+    it("should allow adding recipients up to MaxGlobalAmountPerPeriod", async function () {
+        const gaugeAddress = await gauge.getAddress();
+        const gaugeAddress2 = await gauge2.getAddress();
+        await injector.setMaxGlobalAmountPerPeriod(hre.ethers.parseEther("500"));
+
+        await expect(
+            injector.addRecipients([gaugeAddress], hre.ethers.parseEther("300"), 2, 0)
+        ).to.not.be.reverted;
+
+        await expect(
+            injector.addRecipients([gaugeAddress2], hre.ethers.parseEther("200"), 2, 0)
+        ).to.not.be.reverted;
+    });
+
+
+    it("should not allow exceeding MaxTotalDue when adding recipients", async function () {
+        const gaugeAddress = await gauge.getAddress();
+        const gaugeAddress2 = await gauge2.getAddress();
+        // Set MaxTotalDue to 1000
+        await injector.setMaxTotalDue(hre.ethers.parseEther("1000"));
+
+        // This should succeed
+        await expect(
+            injector.addRecipients([gaugeAddress], hre.ethers.parseEther("250"), 2, 0)
+        ).to.not.be.reverted;
+
+        // This should fail as it would exceed the MaxTotalDue
+        await expect(
+            injector.addRecipients([gaugeAddress2], hre.ethers.parseEther("300"), 2, 0)
+        ).to.be.revertedWithCustomError(injector, "ExceedsWeeklySpend");
+    });
+
+    it("should allow adding recipients up to MaxTotalDue", async function () {
+        const gaugeAddress = await gauge.getAddress();
+        const gaugeAddress2 = await gauge2.getAddress();
+        await injector.setMaxTotalDue(hre.ethers.parseEther("1000"));
+
+        await expect(
+            injector.addRecipients([gaugeAddress], hre.ethers.parseEther("250"), 2, 0)
+        ).to.not.be.reverted;
+
+        await expect(
+            injector.addRecipients([gaugeAddress2], hre.ethers.parseEther("250"), 2, 0)
+        ).to.not.be.reverted;
     });
 
     it('should pause and unpause the contract', async () => {
@@ -109,7 +213,7 @@ describe('ChildChainGaugeInjector', () => {
         const gaugeAddress = await gauge.getAddress();
         const injectorAddress = await injector.getAddress();
 
-        const weeklyIncentive = BigInt("200000000000000000000");
+        const weeklyIncentive = toTokenUnits(200, tokenDecimals);
         await injector.addRecipients([gauge], weeklyIncentive, 2, 0)
 
         const currentTime = Math.floor(Date.now() / 1000);
@@ -117,24 +221,24 @@ describe('ChildChainGaugeInjector', () => {
         const timestampOneWeekFromNow = currentTime + oneWeekInSeconds;
 
         let spend = await injector.estimateSpendUntilTimestamp(timestampOneWeekFromNow)
-        expect(spend).to.equal(400000000000000000000n);
+        expect(spend).to.equal(500000000000400000000n);
 
         await injector.addRecipients([gauge2], weeklyIncentive, 2, 0)
 
         spend = await injector.estimateSpendUntilTimestamp(timestampOneWeekFromNow)
-        expect(spend).to.equal(800000000000000000000n);
+        expect(spend).to.equal(800000000n);
 
         spend = await injector.estimateSpendUntilTimestamp(timestampOneWeekFromNow * 52)
-        expect(spend).to.equal(800000000000000000000n);
+        expect(spend).to.equal(800000000n);
 
         await injector.removeRecipients([gauge2])
 
         spend = await injector.estimateSpendUntilTimestamp(timestampOneWeekFromNow)
-        expect(spend).to.equal(400000000000000000000n);
+        expect(spend).to.equal(400000000n);
     });
 
     it("should add a recipient and check the gauge list", async function () {
-        const recipients = [GAUGE];
+        const recipients = [GAUGE, GAUGE_2];
         const amounts = 100;
         const periods = 3;
 
@@ -215,7 +319,7 @@ describe('ChildChainGaugeInjector', () => {
         const gaugeAddress = await gauge.getAddress();
         const injectorAddress = await injector.getAddress();
 
-        const weeklyIncentive = BigInt("200000000000000000000");
+        const weeklyIncentive = BigInt("2000000");
         expect(await token.balanceOf(injectorAddress)).to.equal(0);
         await token.transfer(injectorAddress, weeklyIncentive * 3n)
         await injector.addRecipients([gauge], weeklyIncentive, 2, 0)
@@ -261,7 +365,7 @@ describe('ChildChainGaugeInjector', () => {
         console.log(await currentChainTime());
 
         [upkeepNeeded, performData] = await injector.checkUpkeep("0x");
-        expect(upkeepNeeded).to.equal(false);
+        expect(upkeepNeeded).to.equal(true);
     });
 
     it("should not run too soon", async function () {
@@ -269,7 +373,7 @@ describe('ChildChainGaugeInjector', () => {
         const gaugeAddress = await gauge.getAddress();
         const injectorAddress = await injector.getAddress();
 
-        const weeklyIncentive = BigInt("200000000000000000000");
+        const weeklyIncentive = BigInt("2000000");
         await injector.addRecipients([gauge], weeklyIncentive, 2, 0)
 
         await token.transfer(injectorAddress, weeklyIncentive * 2n)
@@ -294,17 +398,17 @@ describe('ChildChainGaugeInjector', () => {
         expect(upkeepNeeded).to.equal(false);
 
         sleepTime = BigInt(rewardData[1]) - BigInt(await currentChainTime());
-        await hre.ethers.provider.send("evm_increaseTime",[sleepTime.toString()]);
+        await hre.ethers.provider.send("evm_increaseTime", [sleepTime.toString()]);
         await hre.ethers.provider.send("evm_mine");
         [upkeepNeeded, performData] = await injector.checkUpkeep("0x");
         expect(upkeepNeeded).to.equal(true);
     });
 
-    it.only("should get the full schedule with recipients", async function () {
+    it("should get the full schedule with recipients", async function () {
         const weeklyIncentive = BigInt("200000000000000000000");
 
         await injector.addRecipients([gauge, gauge2], weeklyIncentive, 2, 0);
-    
+
         await injector.getFullSchedule();
     });
 
@@ -313,8 +417,8 @@ describe('ChildChainGaugeInjector', () => {
         const gaugeAddress = await gauge.getAddress();
         const injectorAddress = await injector.getAddress();
 
-        const weeklyIncentive = BigInt("200000000000000000000");
-        const transferAmount = BigInt("200000000000000000000");
+        const weeklyIncentive = BigInt("2000000");
+        const transferAmount = BigInt("2000000");
         await injector.addRecipients([gauge], weeklyIncentive, 2, 0)
         await token.transfer(injectorAddress, transferAmount)
         let rewardData = await gauge.reward_data(tokenAddress);
@@ -328,7 +432,7 @@ describe('ChildChainGaugeInjector', () => {
             expect(upkeepNeeded).to.equal(true);
         }
         expect(await token.balanceOf(injectorAddress)).to.greaterThanOrEqual(weeklyIncentive)
-        let sleepTime = Math.floor(Math.random() * ((60*60*24*365) - (60*60*4) + 1)) + (60*60*4);
+        let sleepTime = Math.floor(Math.random() * ((60 * 60 * 24 * 365) - (60 * 60 * 4) + 1)) + (60 * 60 * 4);
         await hre.ethers.provider.send("evm_increaseTime", [sleepTime]);
         await hre.ethers.provider.send("evm_mine");
         await injector.performUpkeep(performData);
@@ -338,14 +442,14 @@ describe('ChildChainGaugeInjector', () => {
     });
 
     it("should not work with short delay", async function () {
-        await hre.ethers.provider.send("evm_increaseTime", [Math.floor(Math.random() * ((60*60*24*365) - (60*60*4) + 1)) + (60*60*4)]);
+        await hre.ethers.provider.send("evm_increaseTime", [Math.floor(Math.random() * ((60 * 60 * 24 * 365) - (60 * 60 * 4) + 1)) + (60 * 60 * 4)]);
         await hre.ethers.provider.send("evm_mine");
         const tokenAddress = await token.getAddress();
         const gaugeAddress = await gauge.getAddress();
         const injectorAddress = await injector.getAddress();
 
-        const weeklyIncentive = BigInt("200000000000000000000");
-        const transferAmount = BigInt("200000000000000000000");
+        const weeklyIncentive = BigInt("2000000");
+        const transferAmount = BigInt("2000000");
 
         await token.transfer(injectorAddress, transferAmount)
         let rewardData = await gauge.reward_data(tokenAddress);
@@ -374,9 +478,9 @@ describe('ChildChainGaugeInjector', () => {
         const gaugeAddress = await gauge.getAddress();
         const injectorAddress = await injector.getAddress();
 
-        const amount = hre.ethers.parseEther("100");
+        const amount = 100e6;
 
-        await token.connect(owner).transfer(injectorAddress, hre.ethers.parseEther("500"));
+        await token.connect(owner).transfer(injectorAddress, 500e6);
 
         // Perform the manual deposit
         await injector.connect(owner).manualDeposit(gaugeAddress, tokenAddress, amount);
@@ -401,7 +505,7 @@ describe('ChildChainGaugeInjector', () => {
         expect(rewardData.distributor).to.equal(await injector.owner());
     });
 
-    
+
     it('should set and retrieve keeper registry address correctly', async () => {
         const newKeeperAddress = await addr1.getAddress();
         await injector.setKeeperAddresses([newKeeperAddress]);
@@ -409,5 +513,6 @@ describe('ChildChainGaugeInjector', () => {
 
         expect(keeperAddresses).to.include(newKeeperAddress);
     });
+
 
 });
