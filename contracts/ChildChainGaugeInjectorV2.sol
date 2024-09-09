@@ -357,7 +357,6 @@ KeeperCompatibleInterface
 */
     function getFullSchedule() public view returns (address[] memory, uint256[] memory, uint8[] memory, uint56[] memory, uint56[] memory) {
         address[] memory gauges = getActiveGaugeList();
-        uint len = gauges.length;
         uint256[] memory amountsPerPeriod = new uint256[](len);
         uint8[] memory maxPeriods = new uint8[](len);
         uint56[] memory lastTimestamps = new uint56[](len);
