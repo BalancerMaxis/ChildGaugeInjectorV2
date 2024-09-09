@@ -12,7 +12,7 @@ contract ChildChainGaugeInjectorV2Factory {
     event InjectorCreated(address indexed injector, address[] keeperAddresses, address injectTokenAddress, address owner);
 
 
-    address public implementation;
+    address public immutable implementation;
 
     constructor(address logic) {
         implementation = logic;
