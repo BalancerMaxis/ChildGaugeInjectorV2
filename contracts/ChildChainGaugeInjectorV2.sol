@@ -556,6 +556,7 @@ KeeperCompatibleInterface
  * @notice Sets the keeper addresses
  * @param keeperAddresses The array of addresses of the keeper contracts, the 0 address anywhere in this list is a wildcard, all addresses can keep
  */
+    //NOTE: SETTTING THE ZERO ADDRESS HERE ALLOWS ANYONE TO KEEP
     function setKeeperAddresses(address[] memory keeperAddresses) external onlyOwner {
         emit KeeperRegistryAddressUpdated(KeeperAddresses, keeperAddresses);
         KeeperAddresses = keeperAddresses;
