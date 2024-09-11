@@ -2,6 +2,10 @@ name: hardhat-unit-test
 
 on: [pull_request]
 
+env:
+  PRIVATE_KEY: ${{ secrets.DUMMY_PKEY }}
+  ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
