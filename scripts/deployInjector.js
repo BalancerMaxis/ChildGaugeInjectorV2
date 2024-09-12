@@ -1,10 +1,10 @@
 const hre = require("hardhat");
 
-const ADMIN_ADDRESS = "0xc38c5f97B34E175FFd35407fc91a937300E33860" // Balancer Maxi LM Multisig on polygon
-const UPKEEP_CALLER_ADDRESSES = ["0x08a8eea76D2395807Ce7D1FC942382515469cCA1"] // Chainlink Registry on polygon
-const TOKEN_ADDRESS = "0x9a71012B13CA4d3D0Cdc72A177DF3ef03b0E76A3" // BAL on BASE
+const ADMIN_ADDRESS = "0x854B004700885A61107B458f11eCC169A019b764" // Zen
+const UPKEEP_CALLER_ADDRESSES = ["0x854B004700885A61107B458f11eCC169A019b764"] // Zen
+const TOKEN_ADDRESS = "0xA8CE8aee21bC2A48a5EF670afCc9274C7bbbC035" // USDC on zkevm
 const MIN_WAIT_PERIOD = 60 * 60 * 6; // 6 days
-const MAX_INJECTION_REWARD = 1000;
+const MAX_INJECTION_REWARD = 5;
 
 async function main() {
     const Injector = await hre.ethers.getContractFactory("ChildChainGaugeInjectorV2");

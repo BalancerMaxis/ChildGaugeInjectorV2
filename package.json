@@ -7,6 +7,10 @@
     "@nomicfoundation/hardhat-ignition": "^0.15.4",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.0.2",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "install": "^0.13.0",
+    "n": "^10.0.0",
+    "npm": "^10.8.3",
+    "npx": "^10.2.2"
   }
 }

@@ -18,13 +18,17 @@ module.exports = {
                 gasPrice: 1000000000,
             },
             polygon: {
-                url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
+                url: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_KEY}`,
                 accounts: [process.env.PRIVATE_KEY],
             },
+            zkevm: {
+                url: `https://lb.drpc.org/ogrpc?network=polygon-zkevm&dkey=${process.env.DRPC_KEY}`,
+                accounts: [process.env.PRIVATE_KEY],
+            }
         },
     etherscan: {
         apiKey: {
-            polygon: process.env.ETHERSCAN_POLYGON_API_KEY
+            polygon: process.env.POLYGONSCAN_TOKEN
         }
     },
 };
