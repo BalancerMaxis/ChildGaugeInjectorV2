@@ -14,18 +14,11 @@ contract ChildChainGaugeInjectorV2Factory {
 
     address public implementation;
 
-    // deployedInjectors: An array of addresses of deployments from this factory. They may not all be functional, and there may be functional injectors not on this list.
     address[] private deployedInjectors;
 
 
     constructor(address logic) {
         implementation = logic;
-    }
-
-    //** @dev Returns the array of addresses of deployed injectors */
-    /* @return The array of addresses of deployed injectors */
-    function getDeployedInjectors() external view returns (address[] memory) {
-        return deployedInjectors;
     }
 
 /**
@@ -55,5 +48,12 @@ contract ChildChainGaugeInjectorV2Factory {
         emit InjectorCreated(injector, keeperAddresses, injectTokenAddress, owner);
         deployedInjectors.push(injector);
         return injector;
+    }
+
+/** @dev Returns the array of addresses of deployed injectors, note that not all injectors on the list may be active or functional
+ * @return The array of addresses of deployed injectors
+ */
+    function getDeployedInjectors() external view returns (address[] memory) {
+        return deployedInjectors;
     }
 }
