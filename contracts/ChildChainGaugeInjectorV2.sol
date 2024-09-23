@@ -28,7 +28,6 @@ KeeperCompatibleInterface
 {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    event GasTokenWithdrawn(uint256 amountWithdrawn, address recipient);
     event KeeperRegistryAddressUpdated(address[] oldAddresses, address[] newAddresses);
     event MinWaitPeriodUpdated(uint256 oldMinWaitPeriod, uint256 newMinWaitPeriod);
     event MaxInjectionAmountUpdated(uint256 oldAmount, uint256 newAmount);
@@ -301,18 +300,6 @@ KeeperCompatibleInterface
                 revert RemoveNonexistentRecipient(recipients[i]);
             }
         }
-    }
-/**
-  * @notice Withdraws the contract balance
- */
-    function withdrawGasToken(address payable dest) external onlyOwner {
-        address payable recipient = dest;
-        if (recipient == address(0)) {
-            revert ZeroAddress();
-        }
-        uint256 amount = address(this).balance;
-        recipient.transfer(amount);
-        emit GasTokenWithdrawn(amount, recipient);
     }
 
 /**
