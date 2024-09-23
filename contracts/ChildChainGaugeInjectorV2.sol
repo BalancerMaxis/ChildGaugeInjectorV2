@@ -270,8 +270,8 @@ KeeperCompatibleInterface
             target.periodNumber = 0;
             target.programStartTimestamp = doNotStartBeforeTimestamp;
             GaugeConfigs[recipients[i]] = target;
-            if (MaxGlobalAmountPerPeriod > 0 && MaxGlobalAmountPerPeriod < getWeeklySpend()) {
-                revert ExceedsWeeklySpend(getWeeklySpend());
+            if (MaxGlobalAmountPerPeriod > 0 && MaxGlobalAmountPerPeriod < getWeeklySpend(true)) {
+                revert ExceedsWeeklySpend(getWeeklySpend(true));
             }
             if (MaxTotalDue > 0 && MaxTotalDue < getTotalDue()) {
                 revert ExceedsTotalInjectorProgramBudget(getTotalDue());
@@ -389,14 +389,17 @@ KeeperCompatibleInterface
     }
 /**
  * @notice Gets the total weekly spend
+ * @param includeFutureSchedules If true, the total spend will include future schedules, if false will only include schedules with start time before now
  * @return weeklySpend  The total amount of tokens required to fulfil all active programs for 1 period.
  */
-    function getWeeklySpend() public view returns (uint256 weeklySpend){
+    function getWeeklySpend(bool includeFutureSchedules) public view returns (uint256 weeklySpend){
         address[] memory gauges = getActiveGaugeList();
         for (uint256 i = 0; i < gauges.length; i++) {
             Target memory target = GaugeConfigs[gauges[i]];
             if (target.periodNumber < target.maxPeriods) {
-                weeklySpend += target.amountPerPeriod;
+                if(includeFutureSchedules || target.programStartTimestamp <= block.timestamp) {
+                    weeklySpend += target.amountPerPeriod;
+                }
             }
         }
         return weeklySpend;
