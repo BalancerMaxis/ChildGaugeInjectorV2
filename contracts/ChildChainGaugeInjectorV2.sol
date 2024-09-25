@@ -359,7 +359,7 @@ KeeperCompatibleInterface
         address[] memory gauges = getActiveGaugeList();
         uint len = gauges.length;
         uint256[] memory amountsPerPeriod = new uint256[](len);
-        uint8[] memory currentPeriod = new unit8[](len);
+        uint8[] memory currentPeriod = new uint8[](len);
         uint8[] memory maxPeriods = new uint8[](len);
         uint56[] memory lastTimestamps = new uint56[](len);
         uint56[] memory doNotStartBeforeTimestamps = new uint56[](len);
