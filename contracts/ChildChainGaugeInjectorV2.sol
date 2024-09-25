@@ -372,7 +372,7 @@ KeeperCompatibleInterface
             lastTimestamps[i] = target.lastInjectionTimestamp;
             doNotStartBeforeTimestamps[i] = target.programStartTimestamp;
         }
-        return (gauges, amountsPerPeriod, maxPeriods, currentPeriod, lastTimestamps, doNotStartBeforeTimestamps);
+        return (gauges, amountsPerPeriod, maxPeriods, currentPeriods, lastTimestamps, doNotStartBeforeTimestamps);
     }
 
 /**
