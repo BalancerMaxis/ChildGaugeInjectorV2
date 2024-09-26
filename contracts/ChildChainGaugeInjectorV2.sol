@@ -514,8 +514,8 @@ KeeperCompatibleInterface
     }
 
 /**
-* @notice Set distributor from the injector back to the owner.
-* @notice You will have to call set_reward_distributor back to the injector FROM the current distributor if you wish to continue using the injector
+* @notice Set distributor from the injector to a specified distributor.
+* @notice This injector will only function for gauges it is distributor on
 * @notice be aware that the only addresses able to call set_reward_distributor is the current distributor, so make the right person has control over the new address.
 * @param gauge address The Gauge to set distributor for
 * @param reward_token address Token you are setting the distributor for
