@@ -141,10 +141,10 @@ KeeperCompatibleInterface
         uint256 minWaitPeriodSeconds = MinWaitPeriodSeconds;
         IERC20 token = IERC20(InjectTokenAddress);
         uint256 balance = token.balanceOf(address(this));
-
         for (uint256 idx = 0; idx < gauges.length; idx++) {
-            Target storage targetConfig = GaugeConfigs[gauges[idx]];
-            IChildChainGauge gauge = IChildChainGauge(gauges[idx]);
+            address gaugeAddress = gauges[idx];
+            Target storage targetConfig = GaugeConfigs[gaugeAddress];
+            IChildChainGauge gauge = IChildChainGauge(gaugeAddress);
             uint256 current_gauge_emissions_end = gauge
                 .reward_data(address(token))
                 .period_finish;
@@ -160,7 +160,7 @@ KeeperCompatibleInterface
             ) {
                 SafeERC20.forceApprove(
                     token,
-                    gauges[idx],
+                    gaugeAddress,
                     targetConfig.amountPerPeriod
                 );
 
@@ -173,7 +173,7 @@ KeeperCompatibleInterface
                 targetConfig.lastInjectionTimestamp = uint56(block.timestamp);
                 targetConfig.periodNumber++;
                 emit EmissionsInjection(
-                    gauges[idx],
+                    gaugeAddress,
                     address(token),
                     targetConfig.amountPerPeriod
                 );
