@@ -32,6 +32,8 @@ KeeperCompatibleInterface
     event KeeperRegistryAddressUpdated(address[] oldAddresses, address[] newAddresses);
     event MinWaitPeriodUpdated(uint256 oldMinWaitPeriod, uint256 newMinWaitPeriod);
     event MaxInjectionAmountUpdated(uint256 oldAmount, uint256 newAmount);
+    event MaxGlobalAmountPerPeriodUpdated(uint256 oldAmount, uint256 newAmount);
+    event MaxTotalDueUpdated(uint256 oldAmount, uint256 newAmount);
     event ERC20Swept(address indexed token, address recipient, uint256 amount);
     event EmissionsInjection(address gauge, address token, uint256 amount);
     event SetHandlingToken(address token);
@@ -579,10 +581,12 @@ KeeperCompatibleInterface
     }
 
     function setMaxGlobalAmountPerPeriod(uint256 amount) external onlyOwner {
+        emit MaxGlobalAmountPerPeriodUpdated(MaxGlobalAmountPerPeriod, amount);
         MaxGlobalAmountPerPeriod = amount;
     }
 
     function setMaxTotalDue(uint256 amount) external onlyOwner {
+        emit MaxTotalDueUpdated(MaxTotalDue, amount);
         MaxTotalDue = amount;
     }
 /**
