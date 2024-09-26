@@ -169,6 +169,7 @@ KeeperCompatibleInterface
                     address(token),
                     targetConfig.amountPerPeriod
                 );
+                balance -= targetConfig.amountPerPeriod;
 
                 targetConfig.lastInjectionTimestamp = uint56(block.timestamp);
                 targetConfig.periodNumber++;
