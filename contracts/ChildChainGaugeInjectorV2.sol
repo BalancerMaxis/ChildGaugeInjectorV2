@@ -28,10 +28,11 @@ KeeperCompatibleInterface
 {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    event GasTokenWithdrawn(uint256 amountWithdrawn, address recipient);
     event KeeperRegistryAddressUpdated(address[] oldAddresses, address[] newAddresses);
     event MinWaitPeriodUpdated(uint256 oldMinWaitPeriod, uint256 newMinWaitPeriod);
     event MaxInjectionAmountUpdated(uint256 oldAmount, uint256 newAmount);
+    event MaxGlobalAmountPerPeriodUpdated(uint256 oldAmount, uint256 newAmount);
+    event MaxTotalDueUpdated(uint256 oldAmount, uint256 newAmount);
     event ERC20Swept(address indexed token, address recipient, uint256 amount);
     event EmissionsInjection(address gauge, address token, uint256 amount);
     event SetHandlingToken(address token);
@@ -140,10 +141,10 @@ KeeperCompatibleInterface
         uint256 minWaitPeriodSeconds = MinWaitPeriodSeconds;
         IERC20 token = IERC20(InjectTokenAddress);
         uint256 balance = token.balanceOf(address(this));
-
         for (uint256 idx = 0; idx < gauges.length; idx++) {
-            Target storage targetConfig = GaugeConfigs[gauges[idx]];
-            IChildChainGauge gauge = IChildChainGauge(gauges[idx]);
+            address gaugeAddress = gauges[idx];
+            Target storage targetConfig = GaugeConfigs[gaugeAddress];
+            IChildChainGauge gauge = IChildChainGauge(gaugeAddress);
             uint256 current_gauge_emissions_end = gauge
                 .reward_data(address(token))
                 .period_finish;
@@ -159,7 +160,7 @@ KeeperCompatibleInterface
             ) {
                 SafeERC20.forceApprove(
                     token,
-                    gauges[idx],
+                    gaugeAddress,
                     targetConfig.amountPerPeriod
                 );
 
@@ -167,11 +168,12 @@ KeeperCompatibleInterface
                     address(token),
                     targetConfig.amountPerPeriod
                 );
+                balance -= targetConfig.amountPerPeriod;
 
                 targetConfig.lastInjectionTimestamp = uint56(block.timestamp);
                 targetConfig.periodNumber++;
                 emit EmissionsInjection(
-                    gauges[idx],
+                    gaugeAddress,
                     address(token),
                     targetConfig.amountPerPeriod
                 );
@@ -301,18 +303,6 @@ KeeperCompatibleInterface
                 revert RemoveNonexistentRecipient(recipients[i]);
             }
         }
-    }
-/**
-  * @notice Withdraws the contract balance
- */
-    function withdrawGasToken(address payable dest) external onlyOwner {
-        address payable recipient = dest;
-        if (recipient == address(0)) {
-            revert ZeroAddress();
-        }
-        uint256 amount = address(this).balance;
-        recipient.transfer(amount);
-        emit GasTokenWithdrawn(amount, recipient);
     }
 
 /**
@@ -491,12 +481,7 @@ KeeperCompatibleInterface
  * @notice Return a list of active gauges
  */
     function getActiveGaugeList() public view returns (address[] memory) {
-        uint256 len = ActiveGauges.length();
-        address[] memory activeGauges = new address[](len);
-        for (uint256 i = 0; i < len; i++) {
-            activeGauges[i] = ActiveGauges.at(i);
-        }
-        return activeGauges;
+        return ActiveGauges.values();
     }
 
 /**
@@ -529,8 +514,8 @@ KeeperCompatibleInterface
     }
 
 /**
-* @notice Set distributor from the injector back to the owner.
-* @notice You will have to call set_reward_distributor back to the injector FROM the current distributor if you wish to continue using the injector
+* @notice Set distributor from the injector to a specified distributor.
+* @notice This injector will only function for gauges it is distributor on
 * @notice be aware that the only addresses able to call set_reward_distributor is the current distributor, so make the right person has control over the new address.
 * @param gauge address The Gauge to set distributor for
 * @param reward_token address Token you are setting the distributor for
@@ -554,7 +539,8 @@ KeeperCompatibleInterface
 
 /**
  * @notice Sets the keeper addresses
- * @param keeperAddresses The array of addresses of the keeper contracts, the 0 address anywhere in this list is a wildcard, all addresses can keep
+ * @dev Setting the keeper to address(0) will make `performUpkeep` permissionless
+ * @param keeperAddresses The array of addresses of the keeper contracts
  */
     function setKeeperAddresses(address[] memory keeperAddresses) external onlyOwner {
         emit KeeperRegistryAddressUpdated(KeeperAddresses, keeperAddresses);
@@ -579,10 +565,12 @@ KeeperCompatibleInterface
     }
 
     function setMaxGlobalAmountPerPeriod(uint256 amount) external onlyOwner {
+        emit MaxGlobalAmountPerPeriodUpdated(MaxGlobalAmountPerPeriod, amount);
         MaxGlobalAmountPerPeriod = amount;
     }
 
     function setMaxTotalDue(uint256 amount) external onlyOwner {
+        emit MaxTotalDueUpdated(MaxTotalDue, amount);
         MaxTotalDue = amount;
     }
 /**
