@@ -12,7 +12,10 @@ contract ChildChainGaugeInjectorV2Factory {
     event InjectorCreated(address indexed injector, address[] keeperAddresses, address injectTokenAddress, address owner);
 
 
-    address public implementation;
+    address public immutable implementation;
+
+    address[] private deployedInjectors;
+
 
     constructor(address logic) {
         implementation = logic;
@@ -43,6 +46,14 @@ contract ChildChainGaugeInjectorV2Factory {
             maxInjectionAmount
         );
         emit InjectorCreated(injector, keeperAddresses, injectTokenAddress, owner);
+        deployedInjectors.push(injector);
         return injector;
+    }
+
+/** @dev Returns the array of addresses of deployed injectors, note that not all injectors on the list may be active or functional
+ * @return The array of addresses of deployed injectors
+ */
+    function getDeployedInjectors() external view returns (address[] memory) {
+        return deployedInjectors;
     }
 }

@@ -28,10 +28,11 @@ KeeperCompatibleInterface
 {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    event GasTokenWithdrawn(uint256 amountWithdrawn, address recipient);
     event KeeperRegistryAddressUpdated(address[] oldAddresses, address[] newAddresses);
     event MinWaitPeriodUpdated(uint256 oldMinWaitPeriod, uint256 newMinWaitPeriod);
     event MaxInjectionAmountUpdated(uint256 oldAmount, uint256 newAmount);
+    event MaxGlobalAmountPerPeriodUpdated(uint256 oldAmount, uint256 newAmount);
+    event MaxTotalDueUpdated(uint256 oldAmount, uint256 newAmount);
     event ERC20Swept(address indexed token, address recipient, uint256 amount);
     event EmissionsInjection(address gauge, address token, uint256 amount);
     event SetHandlingToken(address token);
@@ -167,6 +168,7 @@ KeeperCompatibleInterface
                     address(token),
                     targetConfig.amountPerPeriod
                 );
+                balance -= targetConfig.amountPerPeriod;
 
                 targetConfig.lastInjectionTimestamp = uint56(block.timestamp);
                 targetConfig.periodNumber++;
@@ -301,18 +303,6 @@ KeeperCompatibleInterface
                 revert RemoveNonexistentRecipient(recipients[i]);
             }
         }
-    }
-/**
-  * @notice Withdraws the contract balance
- */
-    function withdrawGasToken(address payable dest) external onlyOwner {
-        address payable recipient = dest;
-        if (recipient == address(0)) {
-            revert ZeroAddress();
-        }
-        uint256 amount = address(this).balance;
-        recipient.transfer(amount);
-        emit GasTokenWithdrawn(amount, recipient);
     }
 
 /**
@@ -491,12 +481,7 @@ KeeperCompatibleInterface
  * @notice Return a list of active gauges
  */
     function getActiveGaugeList() public view returns (address[] memory) {
-        uint256 len = ActiveGauges.length();
-        address[] memory activeGauges = new address[](len);
-        for (uint256 i = 0; i < len; i++) {
-            activeGauges[i] = ActiveGauges.at(i);
-        }
-        return activeGauges;
+        return ActiveGauges.values();
     }
 
 /**
@@ -580,10 +565,12 @@ KeeperCompatibleInterface
     }
 
     function setMaxGlobalAmountPerPeriod(uint256 amount) external onlyOwner {
+        emit MaxGlobalAmountPerPeriodUpdated(MaxGlobalAmountPerPeriod, amount);
         MaxGlobalAmountPerPeriod = amount;
     }
 
     function setMaxTotalDue(uint256 amount) external onlyOwner {
+        emit MaxTotalDueUpdated(MaxTotalDue, amount);
         MaxTotalDue = amount;
     }
 /**
