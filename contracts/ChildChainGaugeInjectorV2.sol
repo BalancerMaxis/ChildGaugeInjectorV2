@@ -554,8 +554,8 @@ KeeperCompatibleInterface
 
 /**
  * @notice Sets the keeper addresses
- * @param keeperAddresses The array of addresses of the keeper contracts
  * @dev Setting the keeper to address(0) will make `performUpkeep` permissionless
+ * @param keeperAddresses The array of addresses of the keeper contracts
  */
     function setKeeperAddresses(address[] memory keeperAddresses) external onlyOwner {
         emit KeeperRegistryAddressUpdated(KeeperAddresses, keeperAddresses);
