@@ -18,6 +18,10 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
  * @notice This contract is meant to run/manage a single token.  This is almost always the case for a DAO trying to use such a thing.
  * @notice This contract will only function if it is configured as the distributor for a token/gauge it is operating on.
  * @notice This contract is Ownable and  has lots of sweep functionality to allow the owner to work with the contract or get tokens out should there be a problem.
+ * @dev This contract is intended to be a helper to aid an incentives manager in working with Balancer gauges.
+ * @dev It's intent is to provide maximum flexibility to the owner, not make any guarantees about the future on-chain.
+ * @dev A number of safeguards are available to help the owner from making mistakes.
+ * @dev Any contract that will be an owner of this contract should either have passthrough functions to change owner, or sweep all funds.
  * see https://docs.chain.link/chainlink-automation/utility-contracts/
  */
 contract ChildChainGaugeInjectorV2 is
