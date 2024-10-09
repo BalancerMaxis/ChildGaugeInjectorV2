@@ -3,6 +3,8 @@ pragma solidity ^0.8.25;
 
 import "forge-std/Test.sol";
 
+import {IChildChainGauge} from "../contracts/interfaces/balancer/IChildChainGauge.sol";
+
 import {ChildChainGaugeInjectorV2} from "../contracts/ChildChainGaugeInjectorV2.sol";
 import {ChildChainGaugeInjectorV2Factory} from "../contracts/injectorFactoryV2.sol";
 
@@ -27,10 +29,44 @@ contract BaseFixture is Test {
     // agents
     address constant KEEPER = address(5);
 
+    address[] KEEPER_ADDRESSES = new address[](1);
+
+    // dummy constants
+    uint256 MIN_WAIT_PERIOD_SECONDS = 1 days;
+    uint256 MAX_INJECTION_AMOUNT = 1_000e18;
+    address OWNER = address(56565);
+
+    event InjectorCreated(
+        address indexed injector, address[] keeperAddresses, address injectTokenAddress, address owner
+    );
+
     function setUp() public {
+        vm.createSelectFork("polygon");
+
         injector = new ChildChainGaugeInjectorV2();
         factory = new ChildChainGaugeInjectorV2Factory(address(injector));
 
         assert(factory.implementation() == address(injector));
+    }
+
+    function _deployDummyInjector() internal returns (address injectorDeployed_) {
+        KEEPER_ADDRESSES[0] = KEEPER;
+
+        // check: event emitted
+        vm.expectEmit(false, true, true, true); // @note topic0 is not checkeds
+        emit InjectorCreated(address(0), KEEPER_ADDRESSES, USDT, OWNER);
+
+        injectorDeployed_ =
+            factory.createInjector(KEEPER_ADDRESSES, MIN_WAIT_PERIOD_SECONDS, USDT, MAX_INJECTION_AMOUNT, OWNER);
+    }
+
+    function _enableInjectorAsDistributor(address _injector) internal {
+        IChildChainGauge gaugeFirst = IChildChainGauge(GAUGE);
+        IChildChainGauge gaugeSecond = IChildChainGauge(GAUGE_2);
+
+        vm.prank(gaugeFirst.authorizer_adaptor());
+        gaugeFirst.add_reward(USDT, _injector);
+        vm.prank(gaugeSecond.authorizer_adaptor());
+        gaugeSecond.add_reward(USDT, _injector);
     }
 }
