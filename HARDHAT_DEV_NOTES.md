@@ -15,6 +15,8 @@ The contract also includes functionality for the owner to sweep ERC20 tokens and
 
 - Only the defined distributor for a given token may inject rewards.  
 - The injector uses changes to period_finish on the gauge contract to understand epochs and runs once per epoch as early as possible.
+  - period_finish is part of the balancer/curve gauge contract, and describes when the current streaming rewards for a given token will end.  Deep study of the gauge contracts are required to fully understand the function of this helper.
+  - 
 
 This contract is intended to operate as the distributor, and has functionality to return distributorship to the owner
 
@@ -22,11 +24,11 @@ This contract is intended to operate as the distributor, and has functionality t
 
 The injector runs using a watch list. The watch list is defined as the tuple of [gaugeAddress, amountPerPeriod, maxPeriods, doNotStartBeforeTimestamp].
 
-For every streamer address, assuming a sufficent token balance, the injector will inject the specified amounts each epoch until it has done so maxPeriods time.
+For each recipient gauge address, assuming a sufficent token balance, the injector will inject the specified amounts each epoch until it has done so maxPeriods times.
 
 It's possible to add new recipients and configurations without altering or including the old ones (difference to v1).
 
-This list is defined by calling the function `addRecipients(streamerAddresses, amountsPerPeriod, maxPeriods, doNotStartBeforeTimestamp)` on the deployed injector.
+This list is defined by calling the function `addRecipients(recipientGaugeAddresses, amountsPerPeriod, maxPeriods, doNotStartBeforeTimestamp)` on the deployed injector.
 
 
 ### Balances
@@ -36,7 +38,7 @@ The following usage pattern can be followed to maintain proper balances at all t
 
 #### When setting schedule
 - Transfer the exact amount required for the entire program (all streams, all amounts, all periods)
-- Use `addRecipients(streamerAddresses, amountsPerPeriod, maxPeriods, doNotStartBeforeTimestamp)`
+- Use `addRecipients(recipientGaugeAddresses, amountsPerPeriod, maxPeriods, doNotStartBeforeTimestamp)`
 
 
 #### To abort a schedule midway through or reset
