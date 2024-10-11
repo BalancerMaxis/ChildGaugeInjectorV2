@@ -9,4 +9,10 @@ solc = '0.8.25'
 ignore = ['./contracts/**/*']
 
 [rpc_endpoints]
-polygon = "${POLYGON_RPC_KEY}"
+arbitrum = "${ARBITRUM_RPC_URL}"
+base = "${BASE_RPC_URL}"
+ethereum = "${ETHEREUM_RPC_URL}"
+fraxtal = "${FRAXTAL_RPC_URL}"
+gnosis = "${GNOSIS_RPC_URL}"
+optimism = "${OPTIMISM_RPC_URL}"
+polygon = "${POLYGON_RPC_URL}"
