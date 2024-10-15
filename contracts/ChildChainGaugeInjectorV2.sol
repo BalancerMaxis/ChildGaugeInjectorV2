@@ -562,7 +562,7 @@ KeeperCompatibleInterface
     }
 
 /**
- * @notice Sets global MaxInjectionAmount for the injector
+ * @notice Sets global MaxInjectionAmount for the injector which will be checked on each injection.
  * @param amount The max amount that the injector will allow to be paid to a single gauge in single programmed injection
  */
     function setMaxInjectionAmount(uint256 amount) external onlyOwner {
@@ -570,11 +570,19 @@ KeeperCompatibleInterface
         MaxInjectionAmount = amount;
     }
 
+/**
+ * @notice Sets global MaxGlobalAmountPerPeriod for the injector, which will prevent schedules from being added that increases the spend of a single round of all active periods from exceeding this amount.
+ * @param amount The max amount that should be allowed to be scheduled in 1 period across all active programs.
+ */
     function setMaxGlobalAmountPerPeriod(uint256 amount) external onlyOwner {
         emit MaxGlobalAmountPerPeriodUpdated(MaxGlobalAmountPerPeriod, amount);
         MaxGlobalAmountPerPeriod = amount;
     }
 
+/**
+ * @notice Sets global MaxTotalDue for the injector, which will prevent schedules from being added that increases the the total spend of all active programs over all remaining periods from exceeding this amount.
+ * @param amount The max amount that should be allowed to be scheduled across all remaining periods of all active programs.
+ */
     function setMaxTotalDue(uint256 amount) external onlyOwner {
         emit MaxTotalDueUpdated(MaxTotalDue, amount);
         MaxTotalDue = amount;
