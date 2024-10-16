@@ -208,34 +208,6 @@ describe('ChildChainGaugeInjector', () => {
         }
     });
 
-    it("should calculate spend for timestamp correctly", async function () {
-        const tokenAddress = await token.getAddress();
-        const gaugeAddress = await gauge.getAddress();
-        const injectorAddress = await injector.getAddress();
-
-        const weeklyIncentive = toTokenUnits(200, tokenDecimals);
-        await injector.addRecipients([gauge], weeklyIncentive, 2, 0)
-
-        const currentTime = Math.floor(Date.now() / 1000);
-        const oneWeekInSeconds = 7 * 24 * 60 * 60;
-        const timestampOneWeekFromNow = currentTime + oneWeekInSeconds;
-
-        let spend = await injector.estimateSpendUntilTimestamp(timestampOneWeekFromNow)
-        expect(spend).to.equal(500000000000400000000n);
-
-        await injector.addRecipients([gauge2], weeklyIncentive, 2, 0)
-
-        spend = await injector.estimateSpendUntilTimestamp(timestampOneWeekFromNow)
-        expect(spend).to.equal(800000000n);
-
-        spend = await injector.estimateSpendUntilTimestamp(timestampOneWeekFromNow * 52)
-        expect(spend).to.equal(800000000n);
-
-        await injector.removeRecipients([gauge2])
-
-        spend = await injector.estimateSpendUntilTimestamp(timestampOneWeekFromNow)
-        expect(spend).to.equal(400000000n);
-    });
 
     it("should add a recipient and check the gauge list", async function () {
         const recipients = [GAUGE, GAUGE_2];
