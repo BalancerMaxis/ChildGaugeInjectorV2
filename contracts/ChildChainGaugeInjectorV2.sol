@@ -409,23 +409,6 @@ KeeperCompatibleInterface
         }
     }
 
-/**
-* @notice Estimates the spend until a given timestamp
-* @param timestamp The timestamp to estimate spend until
-* @return spendUntilTimestamp The total amount of tokens required to fulfil all active programs until the given timestamp
-*/
-    function estimateSpendUntilTimestamp(uint256 timestamp) public view returns (uint256 spendUntilTimestamp) {
-        address[] memory gauges = getActiveGaugeList();
-        for (uint256 i = 0; i < gauges.length; i++) {
-            Target memory target = GaugeConfigs[gauges[i]];
-            for (uint256 j = target.periodNumber; j < target.maxPeriods; j++) {
-                if (block.timestamp + (j * 604800) <= timestamp) {
-                    spendUntilTimestamp += target.amountPerPeriod;
-                }
-            }
-        }
-        return spendUntilTimestamp;
-    }
 
 /**
  * @notice Gets a list of addresses that are ready to inject
