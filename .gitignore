@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -145,3 +144,20 @@ node_modules
 
 # Hardhat Ignition default folder for deployments against a local node
 ignition/deployments/chain-31337
+
+# Foundry
+cache/
+out/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/**/dry-run/
+
+# Codecov
+lcov.info
+
+# Testing
+.gas-snapshot
+
+# vscode - audit docs
+.vscode/
