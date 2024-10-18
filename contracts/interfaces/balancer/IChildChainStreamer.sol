@@ -4,17 +4,10 @@ pragma solidity >=0.7.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
 interface IChildChainStreamer {
-    event RewardDistributorUpdated(
-        address indexed reward_token,
-        address distributor
-    );
+    event RewardDistributorUpdated(address indexed reward_token, address distributor);
     event RewardDurationUpdated(address indexed reward_token, uint256 duration);
 
-    function add_reward(
-        address _token,
-        address _distributor,
-        uint256 _duration
-    ) external;
+    function add_reward(address _token, address _distributor, uint256 _duration) external;
 
     function remove_reward(address _token, address _recipient) external;
 
@@ -24,10 +17,7 @@ interface IChildChainStreamer {
 
     function set_reward_duration(address _token, uint256 _duration) external;
 
-    function set_reward_distributor(
-        address _token,
-        address _distributor
-    ) external;
+    function set_reward_distributor(address _token, address _distributor) external;
 
     function initialize(address reward_receiver) external;
 

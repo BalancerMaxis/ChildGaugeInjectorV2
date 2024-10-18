@@ -12,11 +12,7 @@ interface IBALTokenHolder {
 
     function getVault() external view returns (address);
 
-    function sweepTokens(
-        address token,
-        address recipient,
-        uint256 amount
-    ) external;
+    function sweepTokens(address token, address recipient, uint256 amount) external;
 
     function withdrawFunds(address recipient, uint256 amount) external;
 }

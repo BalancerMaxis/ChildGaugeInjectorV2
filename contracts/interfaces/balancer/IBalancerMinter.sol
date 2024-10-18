@@ -4,16 +4,9 @@ pragma solidity ^0.8.21;
 
 interface IBalancerMinter {
     event Minted(address indexed recipient, address gauge, uint256 minted);
-    event MinterApprovalSet(
-        address indexed user,
-        address indexed minter,
-        bool approval
-    );
+    event MinterApprovalSet(address indexed user, address indexed minter, bool approval);
 
-    function allowed_to_mint_for(address minter, address user)
-        external
-        view
-        returns (bool);
+    function allowed_to_mint_for(address minter, address user) external view returns (bool);
 
     function getBalancerToken() external view returns (address);
 
@@ -23,10 +16,7 @@ interface IBalancerMinter {
 
     function getGaugeController() external view returns (address);
 
-    function getMinterApproval(address minter, address user)
-        external
-        view
-        returns (bool);
+    function getMinterApproval(address minter, address user) external view returns (bool);
 
     function getNextNonce(address user) external view returns (uint256);
 
@@ -36,18 +26,13 @@ interface IBalancerMinter {
 
     function mintMany(address[] memory gauges) external returns (uint256);
 
-    function mintManyFor(address[] memory gauges, address user)
-        external
-        returns (uint256);
+    function mintManyFor(address[] memory gauges, address user) external returns (uint256);
 
     function mint_for(address gauge, address user) external;
 
     function mint_many(address[8] memory gauges) external;
 
-    function minted(address user, address gauge)
-        external
-        view
-        returns (uint256);
+    function minted(address user, address gauge) external view returns (uint256);
 
     function setMinterApproval(address minter, bool approval) external;
 
