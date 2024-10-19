@@ -8,7 +8,6 @@ solc = '0.8.25'
 [rpc_endpoints]
 arbitrum = "${ARBITRUM_RPC_URL}"
 base = "${BASE_RPC_URL}"
-ethereum = "${ETHEREUM_RPC_URL}"
 fraxtal = "${FRAXTAL_RPC_URL}"
 gnosis = "${GNOSIS_RPC_URL}"
 optimism = "${OPTIMISM_RPC_URL}"
@@ -17,3 +16,14 @@ zkevm = "${ZKEVM_RPC_URL}"
 avalanche = "${AVALANCHE_RPC_URL}"
 mode = "${MODE_RPC_URL}"
 
+
+[etherscan]
+arbitrum = { key = "${ETHERSCAN_ARBITRUM_API_KEY}" }
+base = { key = "${ETHERSCAN_BASE_API_KEY}" }
+fraxtal = { key = "${ETHERSCAN_FRAXTAL_API_KEY}" }
+gnosis = { key = "${ETHERSCAN_GNOSIS_API_KEY}" }
+optimism = { key = "${ETHERSCAN_OPTIMISM_API_KEY}" }
+polygon = { key = "${ETHERSCAN_POLYGON_API_KEY}" }
+zkevm = { key = "${ETHERSCAN_ZKEVM_API_KEY}" }
+avalanche = { key = "${ETHERSCAN_AVALANCHE_API_KEY}" }
+mode = { key = "${ETHERSCAN_MODE_API_KEY}" }
