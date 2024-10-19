@@ -13,11 +13,13 @@ contract InjectorInfraMultiChainDeployment is Script {
     enum Chains {
         ARBITRUM,
         BASE,
-        ETHEREUM,
         FRAXTAL,
         GNOSIS,
         OPTIMISM,
-        POLYGON
+        POLYGON,
+        AVALANCHE,
+        ZKEVM,
+        MODE
     }
 
     // injector infrastructure
@@ -34,6 +36,9 @@ contract InjectorInfraMultiChainDeployment is Script {
         availableChains[Chains.GNOSIS] = "gnosis";
         availableChains[Chains.OPTIMISM] = "optimism";
         availableChains[Chains.POLYGON] = "polygon";
+        availableChains[Chains.AVALANCHE] = "avalanche";
+        availableChains[Chains.ZKEVM] = "zkevm";
+        availableChains[Chains.MODE] = "mode";
     }
 
     /// @dev broadcast transaction modifier
