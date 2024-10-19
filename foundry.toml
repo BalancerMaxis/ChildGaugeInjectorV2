@@ -13,3 +13,7 @@ fraxtal = "${FRAXTAL_RPC_URL}"
 gnosis = "${GNOSIS_RPC_URL}"
 optimism = "${OPTIMISM_RPC_URL}"
 polygon = "${POLYGON_RPC_URL}"
+zkevm = "${ZKEVM_RPC_URL}"
+avalanche = "${AVALANCHE_RPC_URL}"
+mode = "${MODE_RPC_URL}"
+
