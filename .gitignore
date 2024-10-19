@@ -148,6 +148,7 @@ ignition/deployments/chain-31337
 # Foundry
 cache/
 out/
+lib/
 
 # Ignores development broadcast logs
 !/broadcast
@@ -161,3 +162,4 @@ lcov.info
 
 # vscode - audit docs
 .vscode/
+
