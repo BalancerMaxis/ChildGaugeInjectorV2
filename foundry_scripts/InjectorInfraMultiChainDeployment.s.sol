@@ -13,11 +13,13 @@ contract InjectorInfraMultiChainDeployment is Script {
     enum Chains {
         ARBITRUM,
         BASE,
-        ETHEREUM,
         FRAXTAL,
         GNOSIS,
         OPTIMISM,
-        POLYGON
+        POLYGON,
+        AVALANCHE,
+        ZKEVM,
+        MODE
     }
 
     // injector infrastructure
@@ -29,11 +31,13 @@ contract InjectorInfraMultiChainDeployment is Script {
     constructor() {
         availableChains[Chains.ARBITRUM] = "arbitrum";
         availableChains[Chains.BASE] = "base";
-        availableChains[Chains.ETHEREUM] = "ethereum";
         availableChains[Chains.FRAXTAL] = "fraxtal";
         availableChains[Chains.GNOSIS] = "gnosis";
         availableChains[Chains.OPTIMISM] = "optimism";
         availableChains[Chains.POLYGON] = "polygon";
+        availableChains[Chains.AVALANCHE] = "avalanche";
+        availableChains[Chains.ZKEVM] = "zkevm";
+        availableChains[Chains.MODE] = "mode";
     }
 
     /// @dev broadcast transaction modifier
@@ -52,14 +56,16 @@ contract InjectorInfraMultiChainDeployment is Script {
 
         // @note the array can be updated depending on your target chains to deploy
         // @note by default the script will deploy in all chains available in the toml file
-        Chains[] memory targetDeploymentChains = new Chains[](6);
+        Chains[] memory targetDeploymentChains = new Chains[](8);
 
         targetDeploymentChains[0] = Chains.ARBITRUM;
         targetDeploymentChains[1] = Chains.BASE;
-        targetDeploymentChains[2] = Chains.ETHEREUM;
         targetDeploymentChains[3] = Chains.GNOSIS;
         targetDeploymentChains[4] = Chains.OPTIMISM;
         targetDeploymentChains[5] = Chains.POLYGON;
+        targetDeploymentChains[6] = Chains.AVALANCHE;
+        targetDeploymentChains[7] = Chains.ZKEVM;
+        targetDeploymentChains[8] = Chains.MODE;
         // @note fraxtal rpc gives sometimes problems
 
         for (uint256 i = 0; i < targetDeploymentChains.length; i++) {
