@@ -17,4 +17,4 @@ forge verify-contract 0x6142582f8946bf192a4f80ed643a5856d18a7060 ChildChainGauge
 forge verify-contract 0x6142582f8946bf192a4f80ed643a5856d18a7060 ChildChainGaugeInjectorV2Factory --chain optimism --constructor-args-path factoryConstructorArgs.txt
 forge verify-contract 0x6142582f8946bf192a4f80ed643a5856d18a7060 ChildChainGaugeInjectorV2Factory --chain polygon --constructor-args-path factoryConstructorArgs.txt
 forge verify-contract 0x6142582f8946bf192a4f80ed643a5856d18a7060 ChildChainGaugeInjectorV2Factory --chain mode --constructor-args-path factoryConstructorArgs.txt
-forge verify-contract 0x6142582f8946bf192a4f80ed643a5856d18a7060 ChildChainGaugeInjectorV2Factory --chain zkevm --constructor-args-path factoryConstructorArgs.txt
+forge verify-contract 0xa30b47913556a5e1d146b8342f95db3d3a6ae469 ChildChainGaugeInjectorV2Factory --chain zkevm --constructor-args-path factoryConstructorArgsZkevm.txt
