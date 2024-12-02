@@ -49,15 +49,26 @@ contract BaseFixture is Test {
         assert(factory.implementation() == address(injector));
     }
 
+    function _deployDummyInjectorAndRegisterUpkeep() internal returns (address injectorDeployed_) {
+        KEEPER_ADDRESSES[0] = KEEPER;
+
+        // check: event emitted
+        vm.expectEmit(false, true, true, true); // @note topic0 is not checked
+        emit InjectorCreated(address(0), KEEPER_ADDRESSES, USDT, OWNER);
+
+        injectorDeployed_ =
+            factory.createInjector(KEEPER_ADDRESSES, MIN_WAIT_PERIOD_SECONDS, USDT, MAX_INJECTION_AMOUNT, OWNER, true);
+    }
+
     function _deployDummyInjector() internal returns (address injectorDeployed_) {
         KEEPER_ADDRESSES[0] = KEEPER;
 
         // check: event emitted
-        vm.expectEmit(false, true, true, true); // @note topic0 is not checkeds
+        vm.expectEmit(false, true, true, true); // @note topic0 is not checked
         emit InjectorCreated(address(0), KEEPER_ADDRESSES, USDT, OWNER);
 
         injectorDeployed_ =
-            factory.createInjector(KEEPER_ADDRESSES, MIN_WAIT_PERIOD_SECONDS, USDT, MAX_INJECTION_AMOUNT, OWNER);
+            factory.createInjector(KEEPER_ADDRESSES, MIN_WAIT_PERIOD_SECONDS, USDT, MAX_INJECTION_AMOUNT, OWNER, false);
     }
 
     function _enableInjectorAsDistributor(address _injector) internal {
