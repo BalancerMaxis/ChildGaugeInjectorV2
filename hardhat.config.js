@@ -9,7 +9,10 @@ module.exports = {
         {
             hardhat: {
                 forking: {
+                    // use this for `npx hardhat test test/ChildChainGaugeInjectorV2.js`
                     url: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_KEY}`,
+                    // use this for `npx hardhat test test/MainChainGaugeInjectorV2.js`
+                    // url: `https://lb.drpc.org/ogrpc?network=ethereum&dkey=${process.env.DRPC_KEY}`,
                 }
             },
             base: {
