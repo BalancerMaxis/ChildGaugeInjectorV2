@@ -9,10 +9,7 @@ module.exports = {
         {
             hardhat: {
                 forking: {
-                    // use this for `npx hardhat test test/ChildChainGaugeInjectorV2.js`
-                    url: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_KEY}`,
-                    // use this for `npx hardhat test test/MainChainGaugeInjectorV2.js`
-                    // url: `https://lb.drpc.org/ogrpc?network=ethereum&dkey=${process.env.DRPC_KEY}`,
+                    url: `https://lb.drpc.org/ogrpc?network=${process.env.FORK_NETWORK}&dkey=${process.env.DRPC_KEY}`,
                 }
             },
             base: {
@@ -32,7 +29,7 @@ module.exports = {
     etherscan: {
         apiKey: {
             polygon: process.env.ETHERSCAN_POLYGON_API_KEY,
-            ethereum: process.env.ETHERSCAN_API_KEY,
+            ethereum: process.env.ETHERSCAN_ETHEREUM_API_KEY,
         }
     },
 };
