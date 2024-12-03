@@ -53,7 +53,7 @@ describe('MainChainGaugeInjector', () => {
         );
 
         const balance = await hre.ethers.provider.getBalance(ownerSigner.address)
-        console.log(`Balance of ${ownerSigner.address}:`, hre.ethers.formatEther(balance), "MATIC");
+        console.log(`Balance of ${ownerSigner.address}:`, hre.ethers.formatEther(balance), "ETH");
 
         await ownerSigner.sendTransaction({
             to: LM_MULTISIG,
