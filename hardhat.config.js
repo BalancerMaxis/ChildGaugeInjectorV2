@@ -21,10 +21,15 @@ module.exports = {
                 url: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_KEY}`,
                 accounts: [process.env.PRIVATE_KEY],
             },
+            ethereum: {
+                url: `https://lb.drpc.org/ogrpc?network=ethereum&dkey=${process.env.DRPC_KEY}`,
+                accounts: [process.env.PRIVATE_KEY],
+            }
         },
     etherscan: {
         apiKey: {
-            polygon: process.env.ETHERSCAN_POLYGON_API_KEY
+            polygon: process.env.ETHERSCAN_POLYGON_API_KEY,
+            ethereum: process.env.ETHERSCAN_API_KEY,
         }
     },
 };
