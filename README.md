@@ -23,6 +23,20 @@ The primary changes in this contract from V1 are:
     - maxTotalDue: Do not allow schedule changes that would lead the sum of all active schedules for all remaining
       periods to exceed this amount.
 
+### The Child Chain Gauge runs on weekly epochs:
+
+- Only the defined distributor for a given token may start a 1 week stream of rewards by calling deposit_rewards() on the guage.
+    - Any tokens transfered directly to the gauge will be lost, only add via a contract call.
+    - Calling deposit rewards will kick off a 1 week stream of rewards, including whatever is added + any scheduled rewards not yet streamed.
+- If a deposit_rewards is called during a currently running program, a new 1 week program will start, including the new amount + the portion of the rewards that have not yet been paid in.
+- The injector uses changes to period_finish on the gauge contract to understand epochs and runs once per epoch as early as possible.
+    - period_finish is part of the balancer/curve gauge contract, and describes when the current streaming rewards for a given token will end.  Deeper study of the gauge contracts are required to fully understand the function of this helper.
+- The injector uses changes to period_finish on the gauge contract to understand epochs and runs once per epoch as early as possible, assuming the objective to maintain a steady stream of rewards.
+- The injector is intended to be used with chainlink automation to pay gas/execute at the proper time. 
+
+This contract is intended to operate as the distributor, and has functionality to return distributorship to the owner
+
+
 ## Deploying an injector using the factory
 
 Go to the factory contract on the chain you need on etherscan, and call createInjector with the following parameters:
@@ -69,9 +83,25 @@ furture scheduled payments.
 
 There are good comments, and most of the other functions are pretty self explanitory.
 
-## Still to write
 
-- Explain a bit more about how balancer gauges work and the basic concept of this injector. Check v1 docs
-- Chainlink setup guide
+## Setting up a chainlink automation (Balancer Maxi specific notes)
+Each launched injector needs a chainlink automation instance that can trigger injections.  Here are instructions for setting this up, specifically for the Balancer Maxis.
+
+0. Use the factory to launch a new injector, note its address, and get at least 0.1 LINK in your deployer wallet on the chain the upkeep is on.
+1. Go to automation.chain.link and connect with a deployer connect to the correct chain.
+2. Click register new upkeep.
+   - Choose Custom Logic
+   - Paste the address of the injector in `Target contract address`
+   - Fill out the form linke below.  Note that for maxi management admin address should be omnichain safe (0x9ff), and that a gas limit of 2 million on L2s and 1 million on L1s is probably a good start point. 
+   - ![img.png](img/ChainlinkAdd.png)
+   - Sign and execute the [transaction](https://basescan.org/tx/0x94b25b97c145c29906dfe531d810bc2cabf4881c69c87fb905e4ebe62758e6cd).
+   - Sometimes chainlink UI flakes out on the add, once the transaction has executed everything is fine to continue.
+3.  Connect to automation.chain.link with the omnichain multisig and connect to the chain.  Find your [upkeep](https://automation.chain.link/base/86135768442201151504182158474728964311183239902024293588082768088596173769505) based on it's name and target address.
+4. Note the forward address for your upkeep.  This must be [added to the injector as a keeper](https://basescan.org/tx/0x607211f9e8c79b4500f42a0eb9c5b80c9ff622f331951023e7a1b30dcd1b57e9) unless the 0 address is present to allow anyone to keep.
+5. Also ensure that the upkeep is funded with well more link than required for 1 upkeep.  Note the amount required can be lowered by better tuning the gas limit.  You can pay in more link from any address by selection Actions -> Fund Upkeep.
+    - There should be Link in the omnichain safe on many chains.  If not, buy extra and send it there.
+6. The upkeep should now be running/ready to go.  Ensure that the forwarder can performUpkeep on the injector, and that there is enough LINK for the next run.
+![img.png](img/ChainlinkGood.png)
+
 
 
