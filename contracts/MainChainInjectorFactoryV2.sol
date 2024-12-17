@@ -5,8 +5,8 @@ import "./MainChainGaugeInjectorV2.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 /**
- * @title ChildChainGaugeInjectorV2Factory
- * @dev Factory contract to deploy instances of ChildChainGaugeInjectorV2 using a proxy pattern for low deployment cost
+ * @title MainChainGaugeInjectorV2Factory
+ * @dev Factory contract to deploy instances of MainChainGaugeInjectorV2 using a proxy pattern for low deployment cost
  */
 contract MainChainGaugeInjectorV2Factory {
     event InjectorCreated(
@@ -22,13 +22,13 @@ contract MainChainGaugeInjectorV2Factory {
     }
 
     /**
-     * @dev Deploys a new instance of ChildChainGaugeInjectorV2 using Clones.sol
+     * @dev Deploys a new instance of MainChainGaugeInjectorV2 using Clones.sol
      * @param keeperAddresses The array of addresses of the keeper contracts
      * @param minWaitPeriodSeconds The minimum wait period for address between funding (for security)
      * @param injectTokenAddress The ERC20 token this contract should manage
      * @param maxInjectionAmount The max amount of tokens that should be injected to a single gauge in a single week by this injector.
-     * @param owner The owner of the ChildChainGaugeInjectorV2 instance
-     * @return The address of the newly deployed ChildChainGaugeInjectorV2 instance
+     * @param owner The owner of the MainChainGaugeInjectorV2 instance
+     * @return The address of the newly deployed MainChainGaugeInjectorV2 instance
      */
     function createInjector(
         address[] memory keeperAddresses,
