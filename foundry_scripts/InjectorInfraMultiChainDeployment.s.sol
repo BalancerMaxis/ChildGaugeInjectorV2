@@ -4,6 +4,7 @@ pragma solidity ^0.8.25;
 import {Script} from "forge-std/Script.sol";
 
 import {ChildChainGaugeInjectorV2} from "../contracts/ChildChainGaugeInjectorV2.sol";
+import {MainChainGaugeInjectorV2} from "../contracts/MainChainGaugeInjectorV2.sol";
 import {ChildChainGaugeInjectorV2Factory} from "../contracts/injectorFactoryV2.sol";
 
 /// @notice Deploys the v2 infrastructure for the injectors in all chains in `foundry.toml` in the following order:
@@ -86,8 +87,11 @@ contract InjectorInfraMultiChainDeployment is Script {
     /// @param _pk private key to broadcast transaction
     function _infraDeployment(uint256 _pk) internal broadcast(_pk) {
         // 1. {ChildChainGaugeInjectorV2}
+        if (chain.id == 1) {
+            injectorImpl = new MainChainGaugeInjectorV2();
+        } else {
         injectorImpl = new ChildChainGaugeInjectorV2();
-
+        }
         // 2. {ChildChainGaugeInjectorV2Factory}
         injectorFactory = new ChildChainGaugeInjectorV2Factory(address(injectorImpl));
     }
