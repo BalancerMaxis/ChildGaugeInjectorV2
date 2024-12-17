@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
  * @title ChildChainGaugeInjectorV2Factory
  * @dev Factory contract to deploy instances of ChildChainGaugeInjectorV2 using a proxy pattern for low deployment cost
  */
-contract MainChainGaugeInjectorV2Factory {
+contract MainGaugeInjectorV2Factory {
     event InjectorCreated(
         address indexed injector, address[] keeperAddresses, address injectTokenAddress, address owner
     );
