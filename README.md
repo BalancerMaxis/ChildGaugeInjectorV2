@@ -46,7 +46,7 @@ Go to the factory contract on the chain you need on etherscan, and call createIn
 | keeperAddress[]      | A list of addresses that can trigger a due injection.  To start perhaps add your EOA, can include zero address in list to allow anyone to upkeep.                                                 |
 | minWaitPeriodSeconds | A gauge should only be ready every 7 days.  This is a safeguard against something that should never happen, by default set to 6 days or 518400                                                    |
 | injectTokenAddress   | An Injector runs on a single token.  Specify which one here.  For multiple tokens use multiple injectors                                                                                          |
-| maxInjectionAmount   | The maximum amount of tokens that can be injected in a single transaction. Set it to something sane for your token/budget or 0 for no limit.  This is to prevent catostrophic scehduling mistakes |
+| maxInjectionAmount   | The maximum amount of tokens that can be injected in a single transaction. Set it to something sane for your token/budget. Amount must be greater than 0. This is to prevent catostrophic scehduling mistakes |
 | owner                | The owner of the injector.  This address can add and remove schedules, and sweep tokens.  Can be changed, if you're not sure set to your EOA.                                                     |
 
 ## Configuring the global settings of the injector
